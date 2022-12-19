@@ -11,6 +11,17 @@ from rsoccer_gym.vss.vss_gym_base import VSSBaseEnv
 from rsoccer_gym.vss.env_gk.attacker.models import DDPGActor, GaussianPolicy
 
 
+class Action:
+    def __init__(self):
+        pass
+
+    def __getitem__(self, x):
+        return self
+
+    def sample(self):
+        return [random.random(), random.random()]
+
+
 class rSimVSSGK(VSSBaseEnv):
     """
     Description:
@@ -102,6 +113,16 @@ class rSimVSSGK(VSSBaseEnv):
         self.previous_ball_direction = []
         self.isInside = False
         self.ballInsideArea = False
+        
+        self.field_params = {
+            'field_length': self.field.length,
+            'field_width': self.field.width
+        }
+
+        self.v_wheel_deadzone = 0.1
+
+        self.ou_actions = Action()
+
         self.load_atk()
         print('Environment initialized')
     
@@ -116,7 +137,7 @@ class rSimVSSGK(VSSBaseEnv):
         self.attacker = DDPGActor(40, 2)
         print(atk_path)
         atk_checkpoint = torch.load(atk_path, map_location=device)
-        self.attacker.load_state_dict(atk_checkpoint['state_dict_act'])
+        self.attacker.load_state_dict(atk_checkpoint.state_dict())
         self.attacker.eval()
 
     def _atk_obs(self):
