@@ -103,7 +103,7 @@ class rSimVSSGK(VSSBaseEnv):
 
         self.observation_space = gym.spaces.Box(low=-1,
                                                 high=1,
-                                                shape=(40,),
+                                                shape=(11,), #shape=(40,),
                                                 dtype=np.float32)
 
         self.last_frame = None
@@ -179,7 +179,7 @@ class rSimVSSGK(VSSBaseEnv):
         observation.append(self.norm_v(self.frame.ball.v_x))
         observation.append(self.norm_v(self.frame.ball.v_y))
 
-        for i in range(self.n_robots_blue):
+        for i in range(1):
             observation.append(self.norm_pos(self.frame.robots_blue[i].x))
             observation.append(self.norm_pos(self.frame.robots_blue[i].y))
             observation.append(
@@ -192,12 +192,12 @@ class rSimVSSGK(VSSBaseEnv):
             observation.append(self.norm_v(self.frame.robots_blue[i].v_y))
             observation.append(self.norm_w(self.frame.robots_blue[i].v_theta))
 
-        for i in range(self.n_robots_yellow):
-            observation.append(self.norm_pos(self.frame.robots_yellow[i].x))
-            observation.append(self.norm_pos(self.frame.robots_yellow[i].y))
-            observation.append(self.norm_v(self.frame.robots_yellow[i].v_x))
-            observation.append(self.norm_v(self.frame.robots_yellow[i].v_y))
-            observation.append(self.norm_w(self.frame.robots_yellow[i].v_theta))
+        # for i in range(self.n_robots_yellow):
+        #     observation.append(self.norm_pos(self.frame.robots_yellow[i].x))
+        #     observation.append(self.norm_pos(self.frame.robots_yellow[i].y))
+        #     observation.append(self.norm_v(self.frame.robots_yellow[i].v_x))
+        #     observation.append(self.norm_v(self.frame.robots_yellow[i].v_y))
+        #     observation.append(self.norm_w(self.frame.robots_yellow[i].v_theta))
 
         return np.array(observation)
 
