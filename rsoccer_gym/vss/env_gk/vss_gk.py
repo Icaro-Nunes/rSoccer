@@ -103,7 +103,7 @@ class rSimVSSGK(VSSBaseEnv):
 
         self.observation_space = gym.spaces.Box(low=-1,
                                                 high=1,
-                                                shape=(11,), #shape=(40,),
+                                                shape=(11,),  # shape=(40,),
                                                 dtype=np.float32)
 
         self.last_frame = None
@@ -113,7 +113,7 @@ class rSimVSSGK(VSSBaseEnv):
         self.previous_ball_direction = []
         self.isInside = False
         self.ballInsideArea = False
-        
+
         self.field_params = {
             'field_length': self.field.length,
             'field_width': self.field.width
@@ -125,10 +125,33 @@ class rSimVSSGK(VSSBaseEnv):
 
         self.load_atk()
         print('Environment initialized')
-    
+
     def step(self, action):
         observation, reward, done, _ = super().step(action)
         return observation, reward, done, self.reward_shaping_total
+
+    def math_modularize(self, value: float, mod: float) -> float:
+        """Make a value modular between 0 and mod"""
+        if not -mod <= value <= mod:
+            value = math.fmod(value, mod)
+
+        if value < 0:
+            value += mod
+
+        return value
+
+    def smallest_angle_diff(self, angle_a: float, angle_b: float) -> float:
+        """Returns the smallest angle difference between two angles"""
+        angle: float = self.math_modularize(angle_b - angle_a, 2 * math.pi)
+        if angle >= math.pi:
+            angle -= 2 * math.pi
+        elif angle < -math.pi:
+            angle += 2 * math.pi
+        return angle
+
+    def abs_smallest_angle_diff(self, angle_a: float, angle_b: float) -> float:
+        """Returns the absolute smallest angle difference between two angles"""
+        return abs(self.smallest_angle_diff(angle_a, angle_b))
 
     def load_atk(self):
         device = torch.device('cuda')
@@ -146,7 +169,7 @@ class rSimVSSGK(VSSBaseEnv):
         observation.append(self.norm_pos(self.frame.ball.y))
         observation.append(self.norm_v(-self.frame.ball.v_x))
         observation.append(self.norm_v(self.frame.ball.v_y))
-        
+
         #  we reflect the side that the attacker is attacking,
         #  so that he will attack towards the goal where the goalkeeper is
         for i in range(self.n_robots_yellow):
@@ -160,7 +183,8 @@ class rSimVSSGK(VSSBaseEnv):
             )
             observation.append(self.norm_v(-self.frame.robots_yellow[i].v_x))
             observation.append(self.norm_v(self.frame.robots_yellow[i].v_y))
-            observation.append(self.norm_w(-self.frame.robots_yellow[i].v_theta))
+            observation.append(
+                self.norm_w(-self.frame.robots_yellow[i].v_theta))
 
         for i in range(self.n_robots_blue):
             observation.append(self.norm_pos(-self.frame.robots_blue[i].x))
@@ -247,7 +271,7 @@ class rSimVSSGK(VSSBaseEnv):
         left_wheel_speed /= self.field.rbt_wheel_radius
         right_wheel_speed /= self.field.rbt_wheel_radius
 
-        return left_wheel_speed , right_wheel_speed
+        return left_wheel_speed, right_wheel_speed
 
     def _calculate_future_point(self, pos, vel):
         if vel[0] > 0:
@@ -268,13 +292,13 @@ class rSimVSSGK(VSSBaseEnv):
         Cosine between the robot vel vector and the vector robot -> ball.
         This indicates rather the robot is moving towards the ball or not.
         '''
-        
-        if self.frame.ball.x < self.field_params['field_length'] / 4  - 5:
+
+        if self.frame.ball.x < self.field_params['field_length'] / 4 - 5:
             ball = np.array([self.frame.ball.x, self.frame.ball.y])
             robot = np.array([self.frame.robots_blue[0].x,
-                            self.frame.robots_blue[0].y])
+                              self.frame.robots_blue[0].y])
             robot_vel = np.array([self.frame.robots_blue[0].v_x,
-                                self.frame.robots_blue[0].v_y])
+                                  self.frame.robots_blue[0].v_y])
             robot_ball = ball - robot
             robot_ball = robot_ball/np.linalg.norm(robot_ball)
 
@@ -304,7 +328,7 @@ class rSimVSSGK(VSSBaseEnv):
 
     def __defended_ball(self):
         '''Calculate Defended Ball Reward 
-        
+
         Create a zone between the goalkeeper and if the ball enters this zone
         keep the ball speed vector norm to know the direction it entered, 
         and if the ball leaves the area in a different direction it means 
@@ -313,14 +337,14 @@ class rSimVSSGK(VSSBaseEnv):
         pos = np.array([self.frame.robots_blue[0].x,
                         self.frame.robots_blue[0].y])
         ball = np.array([self.frame.ball.x, self.frame.ball.y])
-        distance_gk_ball = np.linalg.norm(pos - ball) * 100 
+        distance_gk_ball = np.linalg.norm(pos - ball) * 100
         field_half_length = self.field_params['field_length'] / 2
 
         defense_reward = 0
         if distance_gk_ball < 8 and not self.isInside:
-            self.previous_ball_direction.append((self.frame.ball.v_x + 0.000001) / \
-                                                (abs(self.frame.ball.v_x)+ 0.000001))
-            self.previous_ball_direction.append((self.frame.ball.v_y + 0.000001) / \
+            self.previous_ball_direction.append((self.frame.ball.v_x + 0.000001) /
+                                                (abs(self.frame.ball.v_x) + 0.000001))
+            self.previous_ball_direction.append((self.frame.ball.v_y + 0.000001) /
                                                 (abs(self.frame.ball.v_y) + 0.000001))
             self.isInside = True
         elif self.isInside:
@@ -329,13 +353,13 @@ class rSimVSSGK(VSSBaseEnv):
             direction_ball_vy = (self.frame.ball.v_y + 0.000001) / \
                                 (abs(self.frame.ball.v_x) + 0.000001)
 
-            if (self.previous_ball_direction[0] != direction_ball_vx or \
-                self.previous_ball_direction[1] != direction_ball_vy) and \
-                self.frame.ball.x > -field_half_length+0.1:
+            if (self.previous_ball_direction[0] != direction_ball_vx or
+                    self.previous_ball_direction[1] != direction_ball_vy) and \
+                    self.frame.ball.x > -field_half_length+0.1:
                 self.isInside = False
                 self.previous_ball_direction.clear()
                 defense_reward = 1
-        
+
         return defense_reward
 
     def __ball_grad(self):
@@ -369,6 +393,18 @@ class rSimVSSGK(VSSBaseEnv):
 
         return grad_ball_potential
 
+    def __angle(self):
+        '''Calculate angle reward~'''
+        # Calculate angle
+        robot = self.frame.robots_blue[0]
+        reward = 0
+        if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(5):
+            reward = 1
+        else:
+            reward = self.abs_smallest_angle_diff(
+                robot.theta, math.pi / 2) / np.deg2rad(5)
+        return reward
+
     def _calculate_reward_and_done(self):
         done = False
         reward = 0
@@ -383,20 +419,22 @@ class rSimVSSGK(VSSBaseEnv):
         w_defense = 1.8
         w_move = 0.2
         w_ball_pot = 0.1
-        w_move_y  = 0.3
+        w_move_y = 0.3
         w_distance = 0.1
         w_blva = 2.0
+        w_angle = 0.5
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
                                          'ball_grad': 0, 'energy': 0,
                                          'goals_blue': 0, 'goals_yellow': 0,
-                                         'defense': 0,'ball_leave_area': 0,
-                                         'move_y': 0, 'distance_own_goal_bar': 0 }
+                                         'defense': 0, 'ball_leave_area': 0,
+                                         'move_y': 0, 'distance_own_goal_bar': 0,
+                                         'angle': 0}
 
         # This case the Goalkeeper leaves the gk area
         if self.frame.robots_blue[0].x > -0.63 or self.frame.robots_blue[0].y > 0.4 \
-            or self.frame.robots_blue[0].y < -0.4: 
+                or self.frame.robots_blue[0].y < -0.4:
             reward = -5
             done = True
             self.isInside = False
@@ -404,16 +442,16 @@ class rSimVSSGK(VSSBaseEnv):
 
         elif self.last_frame is not None:
             self.previous_ball_potential = None
-            
+
             # If the ball entered in the gk area
-            if (not self.ballInsideArea) and self.frame.ball.x < -0.6 and (self.frame.ball.y < 0.35 \
+            if (not self.ballInsideArea) and self.frame.ball.x < -0.6 and (self.frame.ball.y < 0.35
                and self.frame.ball.y > -0.35):
                 self.ballInsideArea = True
 
             # If the ball entered in the gk area and leaves it
-            if self.ballInsideArea and (self.frame.ball.x > -0.6 or self.frame.ball.y > 0.35 \
+            if self.ballInsideArea and (self.frame.ball.x > -0.6 or self.frame.ball.y > 0.35
                or self.frame.ball.y < -0.35):
-                ball_leave_area_reward = 1 
+                ball_leave_area_reward = 1
                 self.ballInsideArea = False
                 done = True
 
@@ -421,7 +459,7 @@ class rSimVSSGK(VSSBaseEnv):
             if self.frame.ball.x < -(self.field_params['field_length'] / 2):
                 self.reward_shaping_total['goals_yellow'] += 1
                 self.reward_shaping_total['goal_score'] -= 1
-                goal_score = -2 
+                goal_score = -2
                 self.ballInsideArea = False
 
             if goal_score != 0:
@@ -430,21 +468,27 @@ class rSimVSSGK(VSSBaseEnv):
             else:
                 move_reward = self.__move_reward()
                 move_y_reward = self.__move_reward_y()
-                ball_defense_reward = self.__defended_ball() 
+                ball_defense_reward = self.__defended_ball()
+                angle_reward = self.__angle()
                 dist_robot_own_goal_bar = -self.field_params['field_length'] / \
                     2 + 0.15 - self.frame.robots_blue[0].x
 
                 reward = w_move_y * move_y_reward + \
-                         w_distance * dist_robot_own_goal_bar + \
-                         w_defense * ball_defense_reward + \
-                         w_blva * ball_leave_area_reward
+                    w_distance * dist_robot_own_goal_bar + \
+                    w_defense * ball_defense_reward + \
+                    w_blva * ball_leave_area_reward + \
+                    w_angle * angle_reward
 
                 self.reward_shaping_total['move'] += w_move * move_reward
                 self.reward_shaping_total['move_y'] += w_move_y * move_y_reward
-                self.reward_shaping_total['ball_grad'] += w_ball_pot * ball_potential
-                self.reward_shaping_total['distance_own_goal_bar'] += w_distance * dist_robot_own_goal_bar
+                self.reward_shaping_total['ball_grad'] += w_ball_pot * \
+                    ball_potential
+                self.reward_shaping_total['distance_own_goal_bar'] += w_distance * \
+                    dist_robot_own_goal_bar
                 self.reward_shaping_total['defense'] += ball_defense_reward * w_defense
-                self.reward_shaping_total['ball_leave_area'] += w_blva * ball_leave_area_reward
+                self.reward_shaping_total['ball_leave_area'] += w_blva * \
+                    ball_leave_area_reward
+                self.reward_shaping_total['angle'] += w_angle * angle_reward
             self.last_frame = self.frame
         done = goal_score != 0 or done
 
@@ -457,8 +501,10 @@ class rSimVSSGK(VSSBaseEnv):
         """
         field_half_length = self.field_params['field_length'] / 2
         field_half_width = self.field_params['field_width'] / 2
+
         def x(): return random.uniform(-field_half_length + 0.1,
                                        field_half_length - 0.1)
+
         def y(): return random.uniform(-field_half_width + 0.1,
                                        field_half_width - 0.1)
         pos_frame: Frame = Frame()
