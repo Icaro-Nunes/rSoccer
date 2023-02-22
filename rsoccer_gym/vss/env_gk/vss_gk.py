@@ -406,13 +406,22 @@ class rSimVSSGK(VSSBaseEnv):
                 reward = 0.0
 
             else:
-                reward = self.last_abs_angle - self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
-                self.last_abs_angle = self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
+                reward = 0
 
         else:
             reward = 0.0
 
         return reward
+
+    def __penalize_ball(self):
+        robot = self.frame.robots_blue[0]
+        ball = self.frame.ball
+
+        if abs(robot.x) > abs(ball.x):
+            return -1
+        else:
+            return 1
+        
 
     def _calculate_reward_and_done(self):
         done = False
@@ -424,6 +433,7 @@ class rSimVSSGK(VSSBaseEnv):
         dist_robot_own_goal_bar = 0
         ball_defense_reward = 0
         ball_leave_area_reward = 0
+        front_ball = 0
 
         w_defense = 1.8
         w_move = 0.2
@@ -432,6 +442,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_distance = 0.1
         w_blva = 2.0
         w_angle = 0.1
+        w_ball = 0.3
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
@@ -439,7 +450,8 @@ class rSimVSSGK(VSSBaseEnv):
                                          'goals_blue': 0, 'goals_yellow': 0,
                                          'defense': 0, 'ball_leave_area': 0,
                                          'move_y': 0, 'distance_own_goal_bar': 0,
-                                         'angle': 0}
+                                         'angle': 0,
+                                         'front_ball': 0}
 
         # This case the Goalkeeper leaves the gk area
         if self.frame.robots_blue[0].x > -0.63 or self.frame.robots_blue[0].y > 0.4 \
@@ -480,13 +492,15 @@ class rSimVSSGK(VSSBaseEnv):
                 ball_defense_reward = self.__defended_ball()
                 angle_reward = self.__angle()
                 dist_robot_own_goal_bar = -self.field_params['field_length'] / \
-                    2 + 0.075 - self.frame.robots_blue[0].x
+                    2 + 0.15 - self.frame.robots_blue[0].x
+                front_ball = self.__penalize_ball()
 
                 reward = w_move_y * move_y_reward + \
                     w_distance * dist_robot_own_goal_bar + \
                     w_defense * ball_defense_reward + \
                     w_blva * ball_leave_area_reward + \
-                    w_angle * angle_reward
+                    w_angle * angle_reward + \
+                    w_ball * front_ball
 
                 self.reward_shaping_total['move'] += w_move * move_reward
                 self.reward_shaping_total['move_y'] += w_move_y * move_y_reward
@@ -498,6 +512,8 @@ class rSimVSSGK(VSSBaseEnv):
                 self.reward_shaping_total['ball_leave_area'] += w_blva * \
                     ball_leave_area_reward
                 self.reward_shaping_total['angle'] += w_angle * angle_reward
+                self.reward_shaping_total['front_ball'] += w_ball * front_ball
+
             self.last_frame = self.frame
 
         done = goal_score != 0 or done
