@@ -417,7 +417,7 @@ class rSimVSSGK(VSSBaseEnv):
         robot = self.frame.robots_blue[0]
         ball = self.frame.ball
 
-        if abs(robot.x) < abs(ball.x):
+        if abs(robot.x) < abs(ball.x) and robot.x < -self.field_params['goal_depth'] / 2:
             return -1
         else:
             return 1
