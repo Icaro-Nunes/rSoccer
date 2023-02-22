@@ -128,6 +128,7 @@ class rSimVSSGK(VSSBaseEnv):
 
     def step(self, action):
         observation, reward, done, _ = super().step(action)
+
         return observation, reward, done, self.reward_shaping_total
 
     def math_modularize(self, value: float, mod: float) -> float:
@@ -401,8 +402,9 @@ class rSimVSSGK(VSSBaseEnv):
         if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(5):
             reward = 1
         else:
-            reward = self.abs_smallest_angle_diff(
+            reward = -self.abs_smallest_angle_diff(
                 robot.theta, math.pi / 2) / np.deg2rad(5)
+            print('reward', reward)
         return reward
 
     def _calculate_reward_and_done(self):
@@ -490,6 +492,7 @@ class rSimVSSGK(VSSBaseEnv):
                     ball_leave_area_reward
                 self.reward_shaping_total['angle'] += w_angle * angle_reward
             self.last_frame = self.frame
+
         done = goal_score != 0 or done
 
         return reward, done
