@@ -398,13 +398,18 @@ class rSimVSSGK(VSSBaseEnv):
         '''Calculate angle reward~'''
         # Calculate angle
         robot = self.frame.robots_blue[0]
+        ball = self.frame.ball
         reward = 0
-        if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(5):
-            reward = 1
+        if self.ballInsideArea:
+            if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(5):
+                reward = 1
+            else:
+                reward = -self.abs_smallest_angle_diff(
+                    robot.theta, math.pi / 2) / np.deg2rad(5)
+                print('reward', reward)
         else:
-            reward = -self.abs_smallest_angle_diff(
-                robot.theta, math.pi / 2) / np.deg2rad(5)
-            print('reward', reward)
+            reward = 0
+
         return reward
 
     def _calculate_reward_and_done(self):
@@ -424,7 +429,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_move_y = 0.3
         w_distance = 0.1
         w_blva = 2.0
-        w_angle = 0.01
+        w_angle = 0.1
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
