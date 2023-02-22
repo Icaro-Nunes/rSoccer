@@ -116,7 +116,8 @@ class rSimVSSGK(VSSBaseEnv):
         self.last_abs_angle = 0
         self.field_params = {
             'field_length': self.field.length,
-            'field_width': self.field.width
+            'field_width': self.field.width,
+            'goal_depth': self.field.goal_depth,
         }
 
         self.v_wheel_deadzone = 0.1
