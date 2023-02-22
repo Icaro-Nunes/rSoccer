@@ -429,7 +429,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_move_y = 0.3
         w_distance = 0.1
         w_blva = 2.0
-        w_angle = 0.1
+        w_angle = 1.2
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
