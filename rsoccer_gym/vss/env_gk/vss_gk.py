@@ -113,7 +113,7 @@ class rSimVSSGK(VSSBaseEnv):
         self.previous_ball_direction = []
         self.isInside = False
         self.ballInsideArea = False
-
+        self.last_abs_angle = 0
         self.field_params = {
             'field_length': self.field.length,
             'field_width': self.field.width
@@ -402,11 +402,13 @@ class rSimVSSGK(VSSBaseEnv):
         reward = 0
         if not self.ballInsideArea:
             if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(10):
-                reward = 5
+                reward = 0.0
             else:
-                reward = max(-self.abs_smallest_angle_diff(robot.theta, np.deg2rad(10)), -5)
+                reward = last_abs_angle - self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
+                self.last_abs_angle = self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
+
         else:
-            reward = 2.5
+            reward = 0.0
 
         return reward
 
@@ -427,7 +429,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_move_y = 0.3
         w_distance = 0.1
         w_blva = 2.0
-        w_angle = 0.5
+        w_angle = 0.1
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
