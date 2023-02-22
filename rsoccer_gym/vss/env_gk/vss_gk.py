@@ -400,12 +400,13 @@ class rSimVSSGK(VSSBaseEnv):
         robot = self.frame.robots_blue[0]
         ball = self.frame.ball
         reward = 0
+
         if not self.ballInsideArea:
             if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(10):
                 reward = 0.0
+
             else:
-                reward = self.last_abs_angle - self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
-                self.last_abs_angle = self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
+                reward =0
 
         else:
             reward = 0.0
@@ -478,7 +479,7 @@ class rSimVSSGK(VSSBaseEnv):
                 ball_defense_reward = self.__defended_ball()
                 angle_reward = self.__angle()
                 dist_robot_own_goal_bar = -self.field_params['field_length'] / \
-                    2 + 0.15 - self.frame.robots_blue[0].x
+                    2 + 0.075 - self.frame.robots_blue[0].x
 
                 reward = w_move_y * move_y_reward + \
                     w_distance * dist_robot_own_goal_bar + \
