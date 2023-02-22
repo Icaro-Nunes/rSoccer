@@ -422,7 +422,6 @@ class rSimVSSGK(VSSBaseEnv):
             return -1
         else:
             return 1
-        
 
     def _calculate_reward_and_done(self):
         done = False
