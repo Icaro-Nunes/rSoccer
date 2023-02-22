@@ -406,7 +406,8 @@ class rSimVSSGK(VSSBaseEnv):
                 reward = 0.0
 
             else:
-                reward =0
+                reward = self.last_abs_angle - self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
+                self.last_abs_angle = self.abs_smallest_angle_diff(robot.theta, math.pi / 2)
 
         else:
             reward = 0.0
