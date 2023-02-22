@@ -402,13 +402,13 @@ class rSimVSSGK(VSSBaseEnv):
         reward = 0
         if self.ballInsideArea:
             if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(10):
-                reward = 1
+                reward = 5
             else:
-                reward = -self.abs_smallest_angle_diff(
-                    robot.theta, math.pi / 2) / math.pi * 2
+                reward = np.clp(-self.abs_smallest_angle_diff(
+                    robot.theta, math.pi / 2) / math.pi * 2, -5.0, 5.0)
                 print('reward', reward)
         else:
-            reward = 0
+            reward = 2.5
 
         return reward
 
@@ -429,7 +429,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_move_y = 0.3
         w_distance = 0.1
         w_blva = 2.0
-        w_angle = 1.2
+        w_angle = 0.5
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
