@@ -401,11 +401,11 @@ class rSimVSSGK(VSSBaseEnv):
         ball = self.frame.ball
         reward = 0
         if self.ballInsideArea:
-            if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(5):
+            if self.abs_smallest_angle_diff(robot.theta, math.pi / 2) < np.deg2rad(10):
                 reward = 1
             else:
                 reward = -self.abs_smallest_angle_diff(
-                    robot.theta, math.pi / 2) / np.deg2rad(5)
+                    robot.theta, math.pi / 2) / math.pi * 2
                 print('reward', reward)
         else:
             reward = 0
