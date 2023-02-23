@@ -80,7 +80,7 @@ class rSimVSSGK(VSSBaseEnv):
         Penalized By:
             Goalkeeper leaves the goalkeeper's area
     Starting State:
-        Random Ball Position 
+        Random Ball Position
         Random Attacker Position
         Random Goalkeeper Position Inside the Goalkeeper's Area
     Episode Termination:
@@ -329,11 +329,11 @@ class rSimVSSGK(VSSBaseEnv):
         return move_reward
 
     def __defended_ball(self):
-        '''Calculate Defended Ball Reward 
+        '''Calculate Defended Ball Reward
 
         Create a zone between the goalkeeper and if the ball enters this zone
-        keep the ball speed vector norm to know the direction it entered, 
-        and if the ball leaves the area in a different direction it means 
+        keep the ball speed vector norm to know the direction it entered,
+        and if the ball leaves the area in a different direction it means
         that the goalkeeper defended the ball.
         '''
         pos = np.array([self.frame.robots_blue[0].x,
@@ -417,8 +417,9 @@ class rSimVSSGK(VSSBaseEnv):
     def __penalize_ball(self):
         robot = self.frame.robots_blue[0]
         ball = self.frame.ball
+        print(self.field_params['goal_depth'])
 
-        if abs(robot.x) < abs(ball.x) and robot.x < -self.field_params['goal_depth'] / 2:
+        if abs(robot.x) < abs(ball.x) and robot.x < -(self.field_params['field_length'] / 2 + self.field_params['goal_depth'] / 2):
             return -1
         else:
             return 1
