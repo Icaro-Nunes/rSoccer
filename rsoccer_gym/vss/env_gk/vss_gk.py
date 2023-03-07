@@ -118,6 +118,7 @@ class rSimVSSGK(VSSBaseEnv):
             'field_length': self.field.length,
             'field_width': self.field.width,
             'goal_depth': self.field.goal_depth,
+            'goal_width': self.field.goal_width
         }
 
         self.v_wheel_deadzone = 0.1
@@ -454,9 +455,9 @@ class rSimVSSGK(VSSBaseEnv):
                                          'angle': 0,
                                          'front_ball': 0}
 
-        # This case the Goalkeeper leaves the gk area
-        if self.frame.robots_blue[0].x > -0.63 or self.frame.robots_blue[0].y > 0.4 \
-                or self.frame.robots_blue[0].y < -0.4:
+        # This case the Goalkeeper leaves the gk area or 'leaves the goal open'
+        if self.frame.robots_blue[0].x > -0.64 or \
+                abs(self.frame.robots_blue[0].y) > (self.field_params['goal_width'] + 0.05)/2:
             reward = -5
             done = True
             self.isInside = False
