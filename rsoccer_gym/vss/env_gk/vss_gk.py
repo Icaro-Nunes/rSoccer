@@ -425,6 +425,23 @@ class rSimVSSGK(VSSBaseEnv):
         else:
             return 1
 
+    def __y_dist_penalty(self):
+        '''Calculate Move to ball_Y reward
+
+        Cosine between the robot vel_Y vector and the vector robot_Y -> ball_Y.
+        This indicates rather the robot is moving towards the ball_Y or not.
+        '''
+        ball = np.array([np.clip(self.frame.ball.y, -0.35, 0.35)])
+        robot = np.array([self.frame.robots_blue[0].y])
+        robot_ball = ball - robot
+
+        normalized_y_dist = abs(
+            robot_ball/self.field_params['field_width']
+        )
+
+        y_dist_penalty = np.clip(-normalized_y_dist, -1, 0)[0]
+        return y_dist_penalty
+
     def _calculate_reward_and_done(self):
         done = False
         reward = 0
@@ -440,7 +457,8 @@ class rSimVSSGK(VSSBaseEnv):
         w_defense = 1.8
         w_move = 0.2
         w_ball_pot = 0.1
-        w_move_y = 0.3
+        w_move_y = 0.0
+        w_y_dist_penalty = 0.6
         w_distance = 0.1
         w_blva = 2.0
         w_angle = 0.1
@@ -453,7 +471,7 @@ class rSimVSSGK(VSSBaseEnv):
                                          'defense': 0, 'ball_leave_area': 0,
                                          'move_y': 0, 'distance_own_goal_bar': 0,
                                          'angle': 0,
-                                         'front_ball': 0}
+                                         'front_ball': 0, 'y_dist_penalty': 0}
 
         # This case the Goalkeeper leaves the gk area or 'leaves the goal open'
         if self.frame.robots_blue[0].x > -0.64 or \
@@ -496,13 +514,15 @@ class rSimVSSGK(VSSBaseEnv):
                 dist_robot_own_goal_bar = -self.field_params['field_length'] / \
                     2 + 0.15 - self.frame.robots_blue[0].x
                 front_ball = self.__penalize_ball()
+                y_dist_penalty = self.__y_dist_penalty()
 
                 reward = w_move_y * move_y_reward + \
                     w_distance * dist_robot_own_goal_bar + \
                     w_defense * ball_defense_reward + \
                     w_blva * ball_leave_area_reward + \
                     w_angle * angle_reward + \
-                    w_ball * front_ball
+                    w_ball * front_ball + \
+                    w_y_dist_penalty * y_dist_penalty
 
                 self.reward_shaping_total['move'] += w_move * move_reward
                 self.reward_shaping_total['move_y'] += w_move_y * move_y_reward
@@ -515,6 +535,7 @@ class rSimVSSGK(VSSBaseEnv):
                     ball_leave_area_reward
                 self.reward_shaping_total['angle'] += w_angle * angle_reward
                 self.reward_shaping_total['front_ball'] += w_ball * front_ball
+                self.reward_shaping_total['y_dist_penalty'] += w_y_dist_penalty * y_dist_penalty
 
             self.last_frame = self.frame
 
