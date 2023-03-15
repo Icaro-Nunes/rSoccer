@@ -289,29 +289,6 @@ class rSimVSSGK(VSSBaseEnv):
         else:
             return None
 
-    def __move_reward(self):
-        '''Calculate Move to ball reward
-
-        Cosine between the robot vel vector and the vector robot -> ball.
-        This indicates rather the robot is moving towards the ball or not.
-        '''
-
-        if self.frame.ball.x < self.field_params['field_length'] / 4 - 5:
-            ball = np.array([self.frame.ball.x, self.frame.ball.y])
-            robot = np.array([self.frame.robots_blue[0].x,
-                              self.frame.robots_blue[0].y])
-            robot_vel = np.array([self.frame.robots_blue[0].v_x,
-                                  self.frame.robots_blue[0].v_y])
-            robot_ball = ball - robot
-            robot_ball = robot_ball/np.linalg.norm(robot_ball)
-
-            move_reward = np.dot(robot_ball, robot_vel)
-
-            move_reward = np.clip(move_reward / 0.4, -5.0, 5.0)
-        else:
-            move_reward = 0
-        return move_reward
-
     def __move_reward_y(self):
         '''Calculate Move to ball_Y reward
 
@@ -415,7 +392,6 @@ class rSimVSSGK(VSSBaseEnv):
         done = False
         reward = 0
         goal_score = 0
-        move_reward = 0
         move_y_reward = 0
         dist_robot_own_goal_bar = 0
         ball_defense_reward = 0
@@ -423,7 +399,6 @@ class rSimVSSGK(VSSBaseEnv):
         front_ball = 0
 
         w_defense = 1.8
-        w_move = 0.2
         w_move_y = 1.0
         w_y_dist_penalty = 0.0
         w_distance = 0.1
@@ -474,7 +449,6 @@ class rSimVSSGK(VSSBaseEnv):
                 reward = goal_score
 
             else:
-                move_reward = self.__move_reward()
                 move_y_reward = self.__move_reward_y()
                 ball_defense_reward = self.__defended_ball()
                 angle_reward = self.__angle()
@@ -491,7 +465,6 @@ class rSimVSSGK(VSSBaseEnv):
                     w_ball * front_ball + \
                     w_y_dist_penalty * y_dist_penalty
 
-                self.reward_shaping_total['move'] += w_move * move_reward
                 self.reward_shaping_total['move_y'] += w_move_y * move_y_reward
                 self.reward_shaping_total['distance_own_goal_bar'] += w_distance * \
                     dist_robot_own_goal_bar
