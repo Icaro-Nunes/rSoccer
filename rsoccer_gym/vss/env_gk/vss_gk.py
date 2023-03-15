@@ -365,37 +365,6 @@ class rSimVSSGK(VSSBaseEnv):
 
         return defense_reward
 
-    def __ball_grad(self):
-        '''Calculate ball potential gradient
-        Difference of potential of the ball in time_step seconds.
-        '''
-        # Calculate ball potential
-        length_cm = self.field_params['field_length'] * 100
-        half_lenght = (self.field_params['field_length'] / 2.0)\
-            + self.field_params['goal_depth']
-
-        # distance to defence
-        dx_d = (half_lenght + self.frame.ball.x) * 100
-        # distance to attack
-        dx_a = (half_lenght - self.frame.ball.x) * 100
-        dy = (self.frame.ball.y) * 100
-
-        dist_1 = -math.sqrt(dx_a ** 2 + 2 * dy ** 2)
-        dist_2 = math.sqrt(dx_d ** 2 + 2 * dy ** 2)
-        ball_potential = ((dist_1 + dist_2) / length_cm - 1) / 2
-
-        grad_ball_potential = 0
-        # Calculate ball potential gradient
-        # = actual_potential - previous_potential
-        if self.previous_ball_potential is not None:
-            diff = ball_potential - self.previous_ball_potential
-            grad_ball_potential = np.clip(diff * 3 / self.time_step,
-                                          -5.0, 5.0)
-
-        self.previous_ball_potential = ball_potential
-
-        return grad_ball_potential
-
     def __angle(self):
         '''Calculate angle reward~'''
         # Calculate angle
@@ -447,7 +416,6 @@ class rSimVSSGK(VSSBaseEnv):
         reward = 0
         goal_score = 0
         move_reward = 0
-        ball_potential = 0
         move_y_reward = 0
         dist_robot_own_goal_bar = 0
         ball_defense_reward = 0
@@ -456,7 +424,6 @@ class rSimVSSGK(VSSBaseEnv):
 
         w_defense = 1.8
         w_move = 0.2
-        w_ball_pot = 0.1
         w_move_y = 1.0
         w_y_dist_penalty = 0.0
         w_distance = 0.1
@@ -466,7 +433,7 @@ class rSimVSSGK(VSSBaseEnv):
 
         if self.reward_shaping_total is None:
             self.reward_shaping_total = {'goal_score': 0, 'move': 0,
-                                         'ball_grad': 0, 'energy': 0,
+                                         'energy': 0,
                                          'goals_blue': 0, 'goals_yellow': 0,
                                          'defense': 0, 'ball_leave_area': 0,
                                          'move_y': 0, 'distance_own_goal_bar': 0,
@@ -526,8 +493,6 @@ class rSimVSSGK(VSSBaseEnv):
 
                 self.reward_shaping_total['move'] += w_move * move_reward
                 self.reward_shaping_total['move_y'] += w_move_y * move_y_reward
-                self.reward_shaping_total['ball_grad'] += w_ball_pot * \
-                    ball_potential
                 self.reward_shaping_total['distance_own_goal_bar'] += w_distance * \
                     dist_robot_own_goal_bar
                 self.reward_shaping_total['defense'] += ball_defense_reward * w_defense
