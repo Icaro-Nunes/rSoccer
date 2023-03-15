@@ -458,7 +458,7 @@ class rSimVSSGK(VSSBaseEnv):
         w_move = 0.2
         w_ball_pot = 0.1
         w_move_y = 0.0
-        w_y_dist_penalty = 0.6
+        w_y_dist_penalty = 0.3
         w_distance = 0.1
         w_blva = 2.0
         w_angle = 0.1
