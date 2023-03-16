@@ -121,6 +121,8 @@ class rSimVSSGK(VSSBaseEnv):
             'goal_width': self.field.goal_width
         }
 
+        self.goal_kick_chance = 0.2
+
         self.v_wheel_deadzone = 0.1
 
         self.ou_actions = Action()
@@ -498,6 +500,44 @@ class rSimVSSGK(VSSBaseEnv):
                                        field_half_width - 0.1)
         pos_frame: Frame = Frame()
 
+
+        if random.random() < self.goal_kick_chance:
+            # This is a simulated 'goal_kick':
+            # the attacker is just behind the ball,
+            # which is spawn around the middle of 
+            # the left half of the field
+
+            # This implementation aims to increase the 
+            # amount of situations where the attacker goes 
+            # free, fullspeed through the middle of the field
+            # towards the goal
+
+            # ball
+            pos_frame.ball.x = random.uniform((-field_half_length + self.field.penalty_length) + 0.05,
+                                            0)
+            pos_frame.ball.y = random.uniform(-penalty_half_width,
+                                            penalty_half_width)
+
+            # attacker
+            pos_frame.robots_yellow[0] = Robot(x=pos_frame.ball.x + random.uniform(0.1, 0.3),
+                                               y=pos_frame.ball.y + random.uniform(-0.2, 0.2),
+                                               theta=math.pi*random.random())
+
+            # goal keeper
+            pos_frame.robots_blue[0] = Robot(x=-field_half_length + 0.05,
+                                            y=random.uniform(-penalty_half_width, penalty_half_width),
+                                            theta=0)
+            
+            #others
+            pos_frame.robots_blue[1] = Robot(x=field_half_length-0.1, y=field_half_width-0.1, theta=math.pi/2)
+            pos_frame.robots_blue[2] = Robot(x=field_half_length-0.1, y=field_half_width-0.3, theta=math.pi/2)
+
+            pos_frame.robots_yellow[1] = Robot(x=field_half_length-0.1, y=field_half_width-0.5, theta=math.pi/2)
+            pos_frame.robots_yellow[2] = Robot(x=field_half_length-0.1, y=field_half_width-0.7, theta=math.pi/2)        
+
+            return pos_frame
+
+
         pos_frame.ball.x = random.uniform(-field_half_length + 0.1,
                                           field_half_length - 0.1)
         pos_frame.ball.y = random.uniform(-field_half_width + 0.1,
@@ -505,7 +545,7 @@ class rSimVSSGK(VSSBaseEnv):
 
         # goal keeper
         pos_frame.robots_blue[0] = Robot(x=-field_half_length + 0.05,
-                                         y=random.uniform(-penalty_half_width, penalty_half_width) ,
+                                         y=random.uniform(-penalty_half_width, penalty_half_width),
                                          theta=0)
         
         #others
