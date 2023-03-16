@@ -483,11 +483,13 @@ class rSimVSSGK(VSSBaseEnv):
 
     def _get_initial_positions_frame(self):
         """
-        Goalie starts at the center of the goal, striker and ball randomly.
+        Goalie starts at the goal (not necessarily at the center), striker and ball randomly.
         Other robots also starts at random positions.
         """
         field_half_length = self.field_params['field_length'] / 2
         field_half_width = self.field_params['field_width'] / 2
+
+        penalty_half_width = self.field.penalty_width/2
 
         def x(): return random.uniform(-field_half_length + 0.1,
                                        field_half_length - 0.1)
@@ -501,8 +503,10 @@ class rSimVSSGK(VSSBaseEnv):
         pos_frame.ball.y = random.uniform(-field_half_width + 0.1,
                                           field_half_width - 0.1)
 
+        # goal keeper
+
         pos_frame.robots_blue[0] = Robot(x=-field_half_length + 0.05,
-                                         y=0.0,
+                                         y=random.uniform(-penalty_half_width, penalty_half_width) ,
                                          theta=0)
         pos_frame.robots_blue[1] = Robot(x=x(), y=y(), theta=0)
         pos_frame.robots_blue[2] = Robot(x=x(), y=y(), theta=0)
