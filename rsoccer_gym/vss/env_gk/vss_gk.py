@@ -504,10 +504,11 @@ class rSimVSSGK(VSSBaseEnv):
                                           field_half_width - 0.1)
 
         # goal keeper
-
         pos_frame.robots_blue[0] = Robot(x=-field_half_length + 0.05,
                                          y=random.uniform(-penalty_half_width, penalty_half_width) ,
                                          theta=0)
+        
+        #others
         pos_frame.robots_blue[1] = Robot(x=x(), y=y(), theta=0)
         pos_frame.robots_blue[2] = Robot(x=x(), y=y(), theta=0)
 
