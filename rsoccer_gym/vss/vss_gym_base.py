@@ -23,13 +23,14 @@ class VSSBaseEnv(gym.Env):
     NORM_BOUNDS = 1.2
     
     def __init__(self, field_type: int,
-                 n_robots_blue: int, n_robots_yellow: int, time_step: float):
+                 n_robots_blue: int, n_robots_yellow: int, time_step: float, simulation_params: dict = {}):
         # Initialize Simulator
         self.time_step = time_step
         self.rsim = RSimVSS(field_type=field_type,
                                       n_robots_blue=n_robots_blue,
                                       n_robots_yellow=n_robots_yellow,
-                                      time_step_ms=int(self.time_step*1000))
+                                      time_step_ms=int(self.time_step*1000),
+                                      simulation_params=simulation_params)
         self.n_robots_blue = n_robots_blue
         self.n_robots_yellow = n_robots_yellow
 
@@ -68,7 +69,7 @@ class VSSBaseEnv(gym.Env):
 
         return observation, reward, done, {}
 
-    def reset(self):
+    def reset(self, params: dict = {}):
         self.steps = 0
         self.last_frame = None
         self.sent_commands = None
@@ -78,7 +79,7 @@ class VSSBaseEnv(gym.Env):
         self.view = None
 
         initial_pos_frame: Frame = self._get_initial_positions_frame()
-        self.rsim.reset(initial_pos_frame)
+        self.rsim.reset(initial_pos_frame, params)
 
         # Get frame from simulator
         self.frame = self.rsim.get_frame()
