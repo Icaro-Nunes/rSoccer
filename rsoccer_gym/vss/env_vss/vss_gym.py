@@ -247,6 +247,8 @@ class VSSEnv(VSSBaseEnv):
         # wr = vr/wheel_radius
         # wl = vl/wheel_radius
 
+        action = actions
+
         # linear velocity comes normalized
         v, w = action[0]*self.max_v, action[1]
 
