@@ -231,25 +231,36 @@ class VSSEnv(VSSBaseEnv):
         return pos_frame
 
     def _actions_to_v_wheels(self, actions):
-        left_wheel_speed = actions[0] * self.max_v
-        right_wheel_speed = actions[1] * self.max_v
+        # w = (vr - vl)/l   # l = distance between robot center and wheel center
+        # v = vl + vr
+        # 
+        # vr - vl = w*l
+        # vr + vl = v
+        # 
+        # 2*vr = w*l + v
+        # vr = (v + w*l)/2
+        # 
+        # (w*l + v)/2 + vl = v
+        # vl = (2*v - w*l - v)/2
+        # vl = (v - w*l)/2
+        # 
+        # wr = vr/wheel_radius
+        # wl = vl/wheel_radius
 
-        left_wheel_speed, right_wheel_speed = np.clip(
-            (left_wheel_speed, right_wheel_speed), -self.max_v, self.max_v
-        )
+        # linear velocity will come normalized
+        v, w = action[0]*self.max_v, action[1]
 
-        # Deadzone
-        if -self.v_wheel_deadzone < left_wheel_speed < self.v_wheel_deadzone:
-            left_wheel_speed = 0
+        wheel_radius = self.field.rbt_wheel_radius
+        l = self.field.rbt_radius
 
-        if -self.v_wheel_deadzone < right_wheel_speed < self.v_wheel_deadzone:
-            right_wheel_speed = 0
+        vr = (v + w*l)/2
+        vl = (v - w*l)/2
 
-        # Convert to rad/s
-        left_wheel_speed /= self.field.rbt_wheel_radius
-        right_wheel_speed /= self.field.rbt_wheel_radius
+        wr = vr/wheel_radius
+        wl = vl/wheel_radius
 
-        return left_wheel_speed , right_wheel_speed
+        return wl, wr 
+
 
     def __ball_grad(self):
         '''Calculate ball potential gradient
