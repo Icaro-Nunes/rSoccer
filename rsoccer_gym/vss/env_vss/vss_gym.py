@@ -268,11 +268,11 @@ class VSSEnv(VSSBaseEnv):
         vr = (v + w*l)/2
         vl = (v - w*l)/2
 
-        REDUCTION = 1
-        max_rpm = self.field.rbt_motor_max_rpm/REDUCTION
+        vr = np.clip(vr, -self.max_v, self.max_v)
+        vl = np.clip(vl, -self.max_v, self.max_v)
 
-        wr = np.clip(vr/wheel_radius, -max_rpm, max_rpm)
-        wl = np.clip(vl/wheel_radius, -max_rpm, max_rpm)
+        wr = vr/wheel_radius
+        wl = vl/wheel_radius
 
         return wl, wr 
 
