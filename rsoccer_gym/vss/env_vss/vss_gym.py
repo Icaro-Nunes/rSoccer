@@ -247,13 +247,23 @@ class VSSEnv(VSSBaseEnv):
         # wr = vr/wheel_radius
         # wl = vl/wheel_radius
 
+        l = self.field.rbt_radius
+
+        # vl = vr = v_max_wheel
+        # max_v = vl+vr = 2*v_max_wheel
+        # max_w = (vr-vl)/l = (v_max_wheel - (- v_max_wheel) )/l = 2*v_max_wheel/l = max_v/l
+        max_v = 2*self.max_v
+        max_w = max_v/l
+
         action = actions
 
         # linear velocity comes normalized
-        v, w = action[0]*self.max_v, action[1]
+        v, w = action[0]*max_v, action[1]*max_w
+
+        v = np.clip(v, -max_v, max_v)
+        w = np.clip(w, -max_w,      max_w)
 
         wheel_radius = self.field.rbt_wheel_radius
-        l = self.field.rbt_radius
 
         vr = (v + w*l)/2
         vl = (v - w*l)/2
