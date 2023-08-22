@@ -231,25 +231,51 @@ class VSSEnv(VSSBaseEnv):
         return pos_frame
 
     def _actions_to_v_wheels(self, actions):
-        left_wheel_speed = actions[0] * self.max_v
-        right_wheel_speed = actions[1] * self.max_v
+        # w = (vr - vl)/l   # l = distance between robot center and wheel center
+        # v = vl + vr
+        # 
+        # vr - vl = w*l
+        # vr + vl = v
+        # 
+        # 2*vr = w*l + v
+        # vr = (v + w*l)/2
+        # 
+        # (w*l + v)/2 + vl = v
+        # vl = (2*v - w*l - v)/2
+        # vl = (v - w*l)/2
+        # 
+        # wr = vr/wheel_radius
+        # wl = vl/wheel_radius
 
-        left_wheel_speed, right_wheel_speed = np.clip(
-            (left_wheel_speed, right_wheel_speed), -self.max_v, self.max_v
-        )
+        l = self.field.rbt_radius
 
-        # Deadzone
-        if -self.v_wheel_deadzone < left_wheel_speed < self.v_wheel_deadzone:
-            left_wheel_speed = 0
+        # vl = vr = v_max_wheel
+        # max_v = vl+vr = 2*v_max_wheel
+        # max_w = (vr-vl)/l = (v_max_wheel - (- v_max_wheel) )/l = 2*v_max_wheel/l = max_v/l
+        max_v = 2*self.max_v
+        max_w = max_v/l
 
-        if -self.v_wheel_deadzone < right_wheel_speed < self.v_wheel_deadzone:
-            right_wheel_speed = 0
+        action = actions
 
-        # Convert to rad/s
-        left_wheel_speed /= self.field.rbt_wheel_radius
-        right_wheel_speed /= self.field.rbt_wheel_radius
+        # linear velocity comes normalized
+        v, w = action[0]*max_v, action[1]*max_w
 
-        return left_wheel_speed , right_wheel_speed
+        v = np.clip(v, -max_v, max_v)
+        w = np.clip(w, -max_w,      max_w)
+
+        wheel_radius = self.field.rbt_wheel_radius
+
+        vr = (v + w*l)/2
+        vl = (v - w*l)/2
+
+        vr = np.clip(vr, -self.max_v, self.max_v)
+        vl = np.clip(vl, -self.max_v, self.max_v)
+
+        wr = vr/wheel_radius
+        wl = vl/wheel_radius
+
+        return wl, wr 
+
 
     def __ball_grad(self):
         '''Calculate ball potential gradient
