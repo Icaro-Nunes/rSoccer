@@ -232,7 +232,7 @@ class VSSEnv(VSSBaseEnv):
 
     def _actions_to_v_wheels(self, actions):
         # v = (vl + vr)/2
-        # w = (vl - vr)/2*wheel_radius
+        # w = (vl - vr)/(2*wheel_radius)
 
         l = self.field.rbt_radius
         wheel_radius = self.field.rbt_wheel_radius
