@@ -231,28 +231,12 @@ class VSSEnv(VSSBaseEnv):
         return pos_frame
 
     def _actions_to_v_wheels(self, actions):
-        # w = (vr - vl)/l   # l = distance between robot center and wheel center
-        # v = vl + vr
-        # 
-        # vr - vl = w*l
-        # vr + vl = v
-        # 
-        # 2*vr = w*l + v
-        # vr = (v + w*l)/2
-        # 
-        # (w*l + v)/2 + vl = v
-        # vl = (2*v - w*l - v)/2
-        # vl = (v - w*l)/2
-        # 
-        # wr = vr/wheel_radius
-        # wl = vl/wheel_radius
+        # v = (vl + vr)/2
+        # w = (vl - vr)/(2*wheel_radius)
 
         l = self.field.rbt_radius
-
-        # vl = vr = v_max_wheel
-        # max_v = vl+vr = 2*v_max_wheel
-        # max_w = (vr-vl)/l = (v_max_wheel - (- v_max_wheel) )/l = 2*v_max_wheel/l = max_v/l
-        max_v = 2*self.max_v
+        wheel_radius = self.field.rbt_wheel_radius
+        max_v = self.max_v # ~1.2 maximum wheel linear velocity
         max_w = max_v/l
 
         action = actions
@@ -261,12 +245,11 @@ class VSSEnv(VSSBaseEnv):
         v, w = action[0]*max_v, action[1]*max_w
 
         v = np.clip(v, -max_v, max_v)
-        w = np.clip(w, -max_w,      max_w)
+        w = np.clip(w, -max_w, max_w)
 
-        wheel_radius = self.field.rbt_wheel_radius
 
-        vr = (v + w*l)/2
-        vl = (v - w*l)/2
+        vr = (v + w*l)
+        vl = (v - w*l)
 
         vr = np.clip(vr, -self.max_v, self.max_v)
         vl = np.clip(vl, -self.max_v, self.max_v)
