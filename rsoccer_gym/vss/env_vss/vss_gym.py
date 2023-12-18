@@ -53,14 +53,14 @@ class VSSEnv(VSSBaseEnv):
     """
 
     def __init__(self):
-        super().__init__(field_type=0, n_robots_blue=3, n_robots_yellow=3,
+        super().__init__(field_type=0, n_robots_blue=1, n_robots_yellow=0,
                          time_step=0.025)
 
         self.action_space = gym.spaces.Box(low=-1, high=1,
                                            shape=(2, ), dtype=np.float32)
         self.observation_space = gym.spaces.Box(low=-self.NORM_BOUNDS,
                                                 high=self.NORM_BOUNDS,
-                                                shape=(40, ), dtype=np.float32)
+                                                shape=(11, ), dtype=np.float32)
 
         # Initialize Class Atributes
         self.previous_ball_potential = None
@@ -111,15 +111,6 @@ class VSSEnv(VSSBaseEnv):
             observation.append(self.norm_v(self.frame.robots_blue[i].v_y))
             observation.append(self.norm_w(self.frame.robots_blue[i].v_theta))
 
-        for i in range(self.n_robots_yellow):
-            observation.append(self.norm_pos(self.frame.robots_yellow[i].x))
-            observation.append(self.norm_pos(self.frame.robots_yellow[i].y))
-            observation.append(self.norm_v(self.frame.robots_yellow[i].v_x))
-            observation.append(self.norm_v(self.frame.robots_yellow[i].v_y))
-            observation.append(
-                self.norm_w(self.frame.robots_yellow[i].v_theta)
-            )
-
         return np.array(observation, dtype=np.float32)
 
     def _get_commands(self, actions):
@@ -130,19 +121,6 @@ class VSSEnv(VSSBaseEnv):
         v_wheel0, v_wheel1 = self._actions_to_v_wheels(actions)
         commands.append(Robot(yellow=False, id=0, v_wheel0=v_wheel0,
                               v_wheel1=v_wheel1))
-
-        # Send random commands to the other robots
-        for i in range(1, self.n_robots_blue):
-            actions = self.ou_actions[i].sample()
-            self.actions[i] = actions
-            v_wheel0, v_wheel1 = self._actions_to_v_wheels(actions)
-            commands.append(Robot(yellow=False, id=i, v_wheel0=v_wheel0,
-                                  v_wheel1=v_wheel1))
-        for i in range(self.n_robots_yellow):
-            actions = self.ou_actions[self.n_robots_blue+i].sample()
-            v_wheel0, v_wheel1 = self._actions_to_v_wheels(actions)
-            commands.append(Robot(yellow=True, id=i, v_wheel0=v_wheel0,
-                                  v_wheel1=v_wheel1))
 
         return commands
 
@@ -219,14 +197,6 @@ class VSSEnv(VSSBaseEnv):
 
             places.insert(pos)
             pos_frame.robots_blue[i] = Robot(x=pos[0], y=pos[1], theta=theta())
-
-        for i in range(self.n_robots_yellow):
-            pos = (x(), y())
-            while places.get_nearest(pos)[1] < min_dist:
-                pos = (x(), y())
-
-            places.insert(pos)
-            pos_frame.robots_yellow[i] = Robot(x=pos[0], y=pos[1], theta=theta())
 
         return pos_frame
 
