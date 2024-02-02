@@ -26,9 +26,12 @@ max_pos = max(field_width / 2, (field_length / 2)
 
 NORM_BOUNDS = 1.2
 
-# desired velocity (in cm/s) to vwheel pair (m/s, m/s)
+def cm_s_to_m_s(v: int) -> float:
+  return float(v)/100.0
+
+# desired velocity (in cm/s) to vwheel pair (rad/s, rad/s)
 def v_to_wheel(v: int) -> Tuple[float, float]:
-  v_m_s = float(v)/100
+  v_m_s = float(v)/100.0
   v_m_s = np.clip(v_m_s, -max_v, max_v)
 
   vr = v_m_s
@@ -51,7 +54,14 @@ def w_to_wheel(w: float) -> Tuple[float, float]:
   return wl, wr 
 
 def vwheel_to_action(vw: float) -> float:
-    return float(vw)/max_v
+    return float(vw)/max_w
+
+# v in m/s
+def v_to_action(v: float) -> float:
+    return v/max_v
+
+def w_to_action(w: float) -> float:
+    return w/max_w
 
 def extract_robot_from_state(state: np.ndarray) -> Tuple[float, float, float, float, float]:
     x_n = state[4]
@@ -91,34 +101,41 @@ def log(state: np.ndarray, command_v: int = 0, command_w: float = 0):
 # back and forth
 for v in range(10, 110, 10):
     state = env.reset()
+    env.render()
 
     log(state)
 
     steps_1sec = int(1.0/time_step)
     steps_200ms = int(0.2/time_step)
 
-    action_f = [vwheel_to_action(i) for i in  v_to_wheel(v)]
+    action_f = [v_to_action(cm_s_to_m_s(v)), 0.0]
     action_b = [(-i) for i in action_f]
     halt = [0.0, 0.0]
+
+    print(f"action_f: {action_f}")
 
     # forth
     for _ in range(steps_1sec):
         state, r, d, i = env.step(action_f)
+        env.render()
         steps+=1
         log(state, command_v=v)
     # pre_back
     for _ in range(steps_200ms):
         state, r, d, i = env.step(halt)
+        env.render()
         steps+=1
         log(state, command_v=0)
     # back
     for _ in range(steps_1sec):
         state, r, d, i = env.step(action_b)
+        env.render()
         steps+=1
         log(state, command_v=-v)
     # stop
     for _ in range(steps_200ms):
         state, r, d, i = env.step(halt)
+        env.render()
         steps+=1
         log(state, command_v=0)
 
