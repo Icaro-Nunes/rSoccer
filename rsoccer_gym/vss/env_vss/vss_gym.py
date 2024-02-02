@@ -183,7 +183,7 @@ class VSSEnv(VSSBaseEnv):
 
         pos_frame: Frame = Frame()
 
-        pos_frame.ball = Ball(x=x(), y=y())
+        pos_frame.ball = Ball(x=field_half_length-0.1, y=0.2)
 
         min_dist = 0.1
 
@@ -191,12 +191,10 @@ class VSSEnv(VSSBaseEnv):
         places.insert((pos_frame.ball.x, pos_frame.ball.y))
         
         for i in range(self.n_robots_blue):
-            pos = (x(), y())
-            while places.get_nearest(pos)[1] < min_dist:
-                pos = (x(), y())
+            pos = (-field_half_length/2, 0.0)
 
             places.insert(pos)
-            pos_frame.robots_blue[i] = Robot(x=pos[0], y=pos[1], theta=theta())
+            pos_frame.robots_blue[i] = Robot(x=pos[0], y=pos[1], theta=0)
 
         return pos_frame
 
