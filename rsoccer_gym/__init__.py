@@ -5,6 +5,11 @@ register(id='VSS-v0',
          max_episode_steps=1200
          )
 
+register(id='VSS-dynrand-v0',
+         entry_point='rsoccer_gym.vss.env_vss:VSSDomainRandomizationEnv',
+         max_episode_steps=1200
+         )
+
 register(id='VSSMA-v0',
          entry_point='rsoccer_gym.vss.env_ma:VSSMAEnv',
          max_episode_steps=1200
@@ -22,6 +27,11 @@ register(id='VSSGk-v0',
 
 register(id='VSSFIRA-v0',
          entry_point='rsoccer_gym.vss.env_vss:VSSFIRAEnv',
+         max_episode_steps=1200
+         )
+
+register(id='VSS5v5-v0',
+         entry_point='rsoccer_gym.vss.env_vss:VSS5v5Env',
          max_episode_steps=1200
          )
 

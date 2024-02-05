@@ -12,6 +12,7 @@ class RSim:
         n_robots_blue: int,
         n_robots_yellow: int,
         time_step_ms: int,
+        simulation_params: dict = {}
     ):
         self.n_robots_blue = n_robots_blue
         self.n_robots_yellow = n_robots_yellow
@@ -29,13 +30,14 @@ class RSim:
             ball_pos=ball_pos,
             blue_robots_pos=blue_robots_pos,
             yellow_robots_pos=yellow_robots_pos,
-            time_step_ms=time_step_ms
+            time_step_ms=time_step_ms,
+            simulation_params=simulation_params
         )
         self.field = self.get_field_params()
 
-    def reset(self, frame: Frame):
+    def reset(self, frame: Frame, params: dict):
         placement_pos = self._placement_dict_from_frame(frame)
-        self.simulator.reset(placement_pos["ball_pos"], placement_pos["blue_robots_pos"], placement_pos["yellow_robots_pos"])
+        self.simulator.reset(placement_pos["ball_pos"], placement_pos["blue_robots_pos"], placement_pos["yellow_robots_pos"], params)
 
     def stop(self):
         del self.simulator
@@ -83,6 +85,7 @@ class RSim:
         blue_robots_pos,
         yellow_robots_pos,
         time_step_ms,
+        simulation_params
     ):
         raise NotImplementedError
 
@@ -111,7 +114,7 @@ class RSimVSS(RSim):
 
     def _init_simulator(self, field_type, n_robots_blue, n_robots_yellow,
                         ball_pos, blue_robots_pos, yellow_robots_pos,
-                        time_step_ms):
+                        time_step_ms, simulation_params):
 
         return robosim.VSS(
             field_type,
@@ -121,6 +124,7 @@ class RSimVSS(RSim):
             ball_pos,
             blue_robots_pos,
             yellow_robots_pos,
+            simulation_params
         )
 
 
@@ -164,7 +168,7 @@ class RSimSSL(RSim):
     
     def _init_simulator(self, field_type, n_robots_blue, n_robots_yellow,
                         ball_pos, blue_robots_pos, yellow_robots_pos,
-                        time_step_ms):
+                        time_step_ms, simulation_params):
 
         return robosim.SSL(
             field_type,
